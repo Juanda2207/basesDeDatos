@@ -1,13 +1,16 @@
-const { Pool } = require('pg');
+const { Client } = require('pg');
 const Router = require('express-promise-router');
 
-const pool = new Pool({
-  user: 'wapvmatlppdvoi',
-  host: 'ec2-52-73-199-211.compute-1.amazonaws.com',
-  database: 'd9jk089ivm4je',
-  password: '1c397296cd4e22bba1fcfec22eb40aa92331beda827dbac4a80cc98790ab68b4',
-  port: 5432,
+const client = new Client({
+ 
+  connectionString: "postgres://bvwezjspwwpuzu:e5e88549efb56c68445d77487b237f1b6a6992dad45c887e9ffaebc0eca9ae16@ec2-184-72-162-198.compute-1.amazonaws.com:5432/d6d6almq3m3fj3",  
+  ssl: {
+    rejectUnauthorized: false
+  }
+
 });
+
+client.connect();
 
 const router = new Router();
 // export our router to be mounted by the parent application
@@ -15,22 +18,43 @@ module.exports = router;
 
 router.get('/consultatotalpacientes', async (req, res) => {
   //const { id } = req.params
-  const { rows } = await pool.query('SELECT * FROM pacientes');
+  const { rows } = await client.query('SELECT * FROM pacientes');
   res.send(rows);
 });
 
 router.post('/insertarpacientes', async (req, res) => {
   const { nombre, apellido, numid } = req.body;
-  await pool.query(
-    `INSERT INTO pacientes(nombre, apellido, numid) VALUES('${nombre}','${apellido}','${numid}')`
+  await client.query(
+    `INSERT INTO pacientes(nombre, apellido, numid) VALUES($1,$2,$3)`, [nombre, apellido, numid]
   );
   res.send('INSERTADO');
 });
 
-router.delete('/borrarpacientes', async (req, res) => {
-  const { nombre, apellido, numid } = req.body;
-  await pool.query(
-    `DELETE FROM pacientes WHERE nombre='${nombre}', apellido='${apellido}',numid='${numid}'`
-  );
-  res.send('ELIMINADO');
+
+/*router.delete ('/borrarpaciente', async (req, res) => {
+
+  const { nombre, apellido, numid } = req.body;  
+
+  const { id } = parseInt(req.params.id);
+  await client.query(`DELETE FROM pacientes where id = $1`, [
+      id
+  ]);
+  res.send(`Paciente ${id} eliminado satisfactoriamente`);
 });
+
+
+
+
+router.post('/actualizapaciente', async (req, res) => {
+  //const id = parseInt(req.params.id);
+  const { nombre, apellido, numid } = req.body;
+
+  await client.query('UPDATE pacientes SET nombre = $1, apellido = $2, numid = $3', [
+      nombre,
+      apellido,
+      numid
+  ]);
+  res.send('Paciente actualizado satisfactoriamente');
+});
+
+*/
